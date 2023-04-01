@@ -1,13 +1,11 @@
 class Signal:
-    def __init__(self,data,typeOfMessage,usedCode,restOfDivision):
+    def __init__(self,data,typeOfMessage,code,codeInformation):
         self.data = data
-        self.type = typeOfMessage
-        self.code = usedCode
-        self.restOfDivison = restOfDivision
-        self.createSignal()
+        self.typeOfMessage = typeOfMessage
+        self.code = code
+        self.codeInformation = codeInformation
+        self.frame = typeOfMessage+code+data+codeInformation
 
-    def createSignal(self):
-        self.frame = self.type + self.code + self.data + self.restOfDivison
 
 
 
