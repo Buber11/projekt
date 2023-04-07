@@ -17,7 +17,7 @@ class FileManager:
         tablesOfFrames = []
         with open(filePath) as file:
             while True:
-                word = file.read(frameLenth)
+                word = file.read(int(frameLenth))
                 if not word:
                     break
                 tablesOfFrames.append(word)
