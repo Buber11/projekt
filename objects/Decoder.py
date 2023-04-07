@@ -16,6 +16,7 @@ class Decoder:
                     bitsOfData[k] = self.XORoperation(bitsOfData[k], bitsOfCRC[j])
                     k += 1
         i = 0;
+        print(bitsOfData)
         for i in range(len(bitsOfData)):
             if bitsOfData[i] == 1:
                 print("bład w ramce")
@@ -35,7 +36,6 @@ class Decoder:
             bit_string = ''.join(str(b) for b in bitsOfFrame)
             if bitsOfFrame[len(bitsOfFrame)-1] == 0:
                 print("błąd w ramce: ")
-        return bit_string
 
 
     def executeFrameDecoding(self,frame):
