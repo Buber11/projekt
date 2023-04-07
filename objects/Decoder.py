@@ -19,7 +19,7 @@ class Decoder:
         print(bitsOfData)
         for i in range(len(bitsOfData)):
             if bitsOfData[i] == 1:
-                print("bład w ramce")
+                print("bład w ramce") #na razie zwraca tylko print bo nie został wybrany tryb
                 break;
 
     def executeParityCheck(self,frame):
@@ -31,11 +31,11 @@ class Decoder:
         if (counter % 2 == 0):
             bit_string = ''.join(str(b) for b in bitsOfFrame)
             if bitsOfFrame[len(bitsOfFrame)-1] == 1:
-                print("błąd w ramce: ")
+                print("błąd w ramce: ")#na razie zwraca tylko print bo nie został wybrany tryb
         else:
             bit_string = ''.join(str(b) for b in bitsOfFrame)
             if bitsOfFrame[len(bitsOfFrame)-1] == 0:
-                print("błąd w ramce: ")
+                print("błąd w ramce: ")#na razie zwraca tylko print bo nie został wybrany tryb
 
 
     def executeFrameDecoding(self,frame):
