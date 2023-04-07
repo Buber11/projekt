@@ -1,5 +1,6 @@
 from objects.Sender import Sender
 from objects.FileManager import FileManager
+from objects.Receiver import Receiver
 
 #tablica przechowująca sygnały, ktore nie przeszly przez kanał komunikacyjny ani nie zostaly zakodowane
 originalSignal = []
@@ -41,6 +42,7 @@ def simulationMenu():
                 code = "10"
             if choice == 3:
                 code = "11"
+                choice = 2
         if choice == 3:
             global arqMode
             arqMode = input("Wybierz tryb działania ARQ:\n 1. Stop and Wait \n 2. Selective Repeat")
@@ -48,7 +50,10 @@ def simulationMenu():
             sender = Sender()
             tablesOfFrames = sender.prepareFrames(originalSignal,code)
         if choice == 5:
-            print("5")
+            #zaimplementowałem tutaj na razie sam dekoder i odbiornik
+            receiver = Receiver()
+            receiver.receiveFrames(tablesOfFrames)
+            receiver.executeDecoder();
         if choice == 0:
             return False
 def menu():
