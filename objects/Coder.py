@@ -30,13 +30,9 @@ class Coder:
             if bitsOfData[i] == 1:
                 counter += 1
         if(counter%2 == 0 ):
-            bit_string = ''.join(str(b) for b in bitsOfData)
-            bit_string += "0"
+            return "0"
         else:
-            bit_string = ''.join(str(b) for b in bitsOfData)
-            bit_string += "1"
-        print(bit_string)
-        return bit_string
+            return "1"
 
     def getCodeInformation(self, data,code):
         """

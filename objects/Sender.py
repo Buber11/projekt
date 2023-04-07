@@ -9,7 +9,6 @@ class Sender:
         for data in originalSignal:
             codeInformation = coder.getCodeInformation(data,code)
             tablesOfFrames.append(Signal(data,"0",code,codeInformation))
-            print(codeInformation)
         return tablesOfFrames
 
 
