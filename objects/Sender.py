@@ -6,9 +6,10 @@ class Sender:
     def prepareFrames(self, originalSignal,code):
         tablesOfFrames = []
         coder = Coder()
-        for frame in originalSignal:
-            codeInformation = coder.getCodeInformation(frame,code)
-            tablesOfFrames.append(Signal(frame,"0",code,))
+        for data in originalSignal:
+            codeInformation = coder.getCodeInformation(data,code)
+            tablesOfFrames.append(Signal(data,"0",code,codeInformation))
+        return tablesOfFrames
 
 
 
