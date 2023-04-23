@@ -35,13 +35,6 @@ class Coder:
             return "1"
 
     def getCodeInformation(self, data,code):
-        """
-        TODO
-        tutaj trzeba dodać zdobywanie tej reszty z dzielenia dla CRC lub 0/1 dla bitu parzystosci
-        w parametrze frame masz dane z ktorych trzeba to wydobyc, w code masz info czy uzywasz crc czy bitu i trzeba do tego 3 ify zrobic i w kazdym return
-        :param frame:
-        :return:
-        """
         if code == "01": #wykonaj operacje dzielenia CRC8
             data = self.setCRC8(data)
             codeInformation = self.getCodeInformationOFCRC(data,"10111111")
