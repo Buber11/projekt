@@ -6,6 +6,11 @@ class Signal:
         self.codeInformation = codeInformation
         self.frame = typeOfMessage+code+data+codeInformation
 
+    def __str__(self):
+        return f"Signal(data={self.data}," \
+               f" typeOfMessage={self.typeOfMessage}," \
+               f" code={self.code}," \
+               f" codeInformation={self.codeInformation})"
 
 
 

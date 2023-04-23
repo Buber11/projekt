@@ -1,28 +1,31 @@
 import random
 from objects.Signal import Signal
+
+
 class Chanel:
-    def __init__(self,probability,type):
+    def __init__(self, probability, type):
         # Zmienna uzywana do BSC i G-E służąca do określenia szansy wystąpienia błędu w BSC, a w G-E do określenia szansy pozostania w dobrym stanie
         self.errorProbability = float(probability[0])
         # Zmienna uzywana do G-E służąca do określenia szansy pozostania w stanie złym
         self.maintainErrorProbability = float(probability[1])
-        self.type = type;
+        self.type = type
         self.goodBSCState = bool(True);
 
-    def simulateChannel(self,tableOfFrames):
-        if type == 1:
-            return self.BSCChannelSimulation(self,tableOfFrames)
-        if type == 2:
-            return self.GEChanelSimulation(self,tableOfFrames)
-    def BSCChannelSimulation(self,tableOfFrames):
+    def simulateChannel(self, tableOfFrames):
+        if self.type == 1:
+            return self.BSCChannelSimulation(tableOfFrames)
+        if self.type == 2:
+            return self.GEChanelSimulation(tableOfFrames)
+
+    def GEChanelSimulation(self, tableOfFrames):
         tableOfNewFrames = []
-        elements = ["yes","no"] #elementy do losowania
+        elements = ["yes", "no"]  # elementy do losowania
 
         # Wagi losowania do pozostania w dobrym stanie
-        weights = [self.errorProbability,1-self.errorProbability]
+        weights = [self.errorProbability, 1 - self.errorProbability]
 
         # Wagi losowania do pozostania w złym stanie
-        badWeights = [self.maintainErrorProbability,1-self.maintainErrorProbability]
+        badWeights = [self.maintainErrorProbability, 1 - self.maintainErrorProbability]
 
         for signal in tableOfFrames:
             frame = signal.frame
@@ -51,28 +54,26 @@ class Chanel:
                         self.goodBSCState = bool(True)
                         continue
 
-
             bit_string = ''.join(str(b) for b in bitsOfFrame)
             signal.frame = bit_string
             tableOfNewFrames.append(signal)
         return tableOfNewFrames
 
-
-    def GEChanelSimulation(self,tableOfFrames):
+    def BSCChannelSimulation(self, tableOfFrames):
         tableOfNewFrames = []
-        elements = ["yes","no"] #elementy do losowania
-        weights = [self.errorProbability,1-self.errorProbability]
+        elements = ["yes", "no"]  # elementy do losowania
+        weights = [self.errorProbability, 1 - self.errorProbability]
         for signal in tableOfFrames:
             frame = signal.frame
             bitsOfFrame = [int(bit) for bit in frame]
             for i in range(len(frame)):
                 los = random.choices(elements, weights=weights)
-                if los[0] == "yes": #dochodzi do zamiany bitów
+                if los[0] == "yes":  # dochodzi do zamiany bitów
                     if bitsOfFrame[i] == 1:
                         bitsOfFrame[i] = 0
                     else:
-                        bitsOfFrame[i] =1
-                if los[0] == "no": #nie dochodzi do zamiany bitów
+                        bitsOfFrame[i] = 1
+                if los[0] == "no":  # nie dochodzi do zamiany bitów
                     continue
             bit_string = ''.join(str(b) for b in bitsOfFrame)
             signal.frame = bit_string

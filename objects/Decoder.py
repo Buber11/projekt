@@ -19,8 +19,10 @@ class Decoder:
         print(bitsOfData)
         for i in range(len(bitsOfData)):
             if bitsOfData[i] == 1:
-                print("bład w ramce") #na razie zwraca tylko print bo nie został wybrany tryb
-                break;
+                # print("bład w ramce: ") #na razie zwraca tylko print bo nie został wybrany tryb
+                return False
+
+        return True
 
     def executeParityCheck(self,frame):
         bitsOfFrame = [int(bit) for bit in frame]
@@ -31,20 +33,27 @@ class Decoder:
         if (counter % 2 == 0):
             bit_string = ''.join(str(b) for b in bitsOfFrame)
             if bitsOfFrame[len(bitsOfFrame)-1] == 1:
-                print("błąd w ramce: ")#na razie zwraca tylko print bo nie został wybrany tryb
+                # print("błąd w ramce: ")#na razie zwraca tylko print bo nie został wybrany tryb
+                return False
         else:
             bit_string = ''.join(str(b) for b in bitsOfFrame)
             if bitsOfFrame[len(bitsOfFrame)-1] == 0:
-                print("błąd w ramce: ")#na razie zwraca tylko print bo nie został wybrany tryb
+                # print("błąd w ramce: ")#na razie zwraca tylko print bo nie został wybrany tryb
+                return False
+
+        return True
 
 
     def executeFrameDecoding(self,frame):
         title = frame[:3] #pobieranie etykiety ramki w celu weryfikacji jakiego kodu użyć
         if title == "001":
-            self.executeCRC(frame[3:],"10111111") #CRC8
+            # self.executeCRC(frame[3:],"10111111") #CRC8
+            return self.executeCRC(frame[3:],"10111111") #CRC8
         if title == "010":
-            self.executeCRC(frame[3:],"1011111111111111") #CRC16
+            # self.executeCRC(frame[3:],"1011111111111111") #CRC16
+            return self.executeCRC(frame[3:], "1011111111111111")  # CRC16
         if title == "011":
-            self.executeParityCheck(frame[3:]) #parzystośc
+            # self.executeParityCheck(frame[3:])  # parzystośc
+            return self.executeParityCheck(frame[3:]) #parzystośc
 
 

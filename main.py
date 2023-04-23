@@ -34,7 +34,6 @@ def simulationMenu():
             modelType = int(input("Wybierz model kanału:\n 1. BSC \n 2. Gilberta-Elliota"))
 
             # Musiałem zrobić tablice z numpy bo inaczej nie chcialo dzialac xd
-
             if modelType == 1:
                 probability[0] = input("podaj prawdopodobieństwo wysątpienia zmiany: ")
                 model = Chanel(probability,modelType)
@@ -58,15 +57,28 @@ def simulationMenu():
                 code = "11"
         if choice == 3:
             global arqMode
-            arqMode = input("Wybierz tryb działania ARQ:\n 1. Stop and Wait \n 2. Selective Repeat")
+            arqMode = int(input("Wybierz tryb działania ARQ:\n 1. Stop and Wait \n 2. Selective Repeat"))
         if choice == 4:
+            if code not in ("01", "10", "11"):
+                print("Brak wybranego kodu detekcyjnego!")
+                break
+
             sender = Sender()
             # Przygytowanie ramek przed przejściem przez kanał komunikacyjny
+            global tablesOfFrames
             tablesOfFrames = sender.prepareFrames(originalSignal, code)
-        if choice == 5:
-            tablesOfFrames2 = model.simulateChannel(tablesOfFrames)
 
-            receiver = Receiver(tablesOfFrames2)
+        if choice == 5:
+            if arqMode not in (1, 2):
+                print("Brak wybranego trybu ARQ!")
+                break
+
+            # tutaj ramki przechodzą przez kanał ale nie są odbierane jeszcze
+            tablesOfFrames = model.simulateChannel(tablesOfFrames)
+
+            receiver = Receiver(tablesOfFrames,arqMode,model,code,originalSignal)
+
+            # tutaj ramki są odbierane i musze przekazac info o arq
             receiver.executeDecoder()
         if choice == 0:
             return False
