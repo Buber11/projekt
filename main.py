@@ -80,6 +80,8 @@ def simulationMenu():
 
             # tutaj ramki są odbierane i musze przekazac info o arq
             receiver.executeDecoder()
+
+
         if choice == 0:
             return False
 
@@ -99,10 +101,10 @@ def menu():
             fileManager.generateToFile(filePath, dataLength)
         if choice == 2:
             filePath = input("Podaj ścieżkę do pliku: ")
-            frameLenth = input("Podaj długość pojedynczej ramki danych")
+            frameLength = input("Podaj długość pojedynczej ramki danych")
             fileManager = FileManager()
             global originalSignal
-            originalSignal = fileManager.loadFromFile(filePath, frameLenth)
+            originalSignal = fileManager.loadFromFile(filePath, frameLength)
             for i in originalSignal:
                 print(i)
         if choice == 3:

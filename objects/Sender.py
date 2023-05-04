@@ -7,7 +7,7 @@ class Sender:
         pass
 
     def prepareFrames(self, originalSignal, code):
-        if len(originalSignal) == 1:
+        if not isinstance(originalSignal,list):
             coder = Coder()
             codeInformation = coder.getCodeInformation(originalSignal, code)
             return Signal(originalSignal, "0", code, codeInformation)

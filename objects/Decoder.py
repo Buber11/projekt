@@ -10,16 +10,16 @@ class Decoder:
         bitsOfData = [int(bit) for bit in frame]
         bitsOfCRC = [int(bit) for bit in CRC]
         for i in range(len(frame)):
-            k = i;
+            k = i
             if bitsOfData[i] == 1 and i <= len(frame) - len(CRC):
                 for j in range(len(CRC)):
                     bitsOfData[k] = self.XORoperation(bitsOfData[k], bitsOfCRC[j])
                     k += 1
-        i = 0;
-        print(bitsOfData)
+        i = 0
+        # print(bitsOfData)
         for i in range(len(bitsOfData)):
             if bitsOfData[i] == 1:
-                # print("bład w ramce: ") #na razie zwraca tylko print bo nie został wybrany tryb
+                #bład w ramce
                 return False
 
         return True
