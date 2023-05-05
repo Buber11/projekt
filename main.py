@@ -7,8 +7,12 @@ import numpy as np
 # tablica przechowująca sygnały, ktore nie przeszly przez kanał komunikacyjny ani nie zostaly zakodowane
 originalSignal = []
 
+# dlugosc ramek
+frameLength = 0
+
 # model kanału
 model = ""
+modelType = -1
 probability = np.array([0.0, 0.0])
 # kod detekcyjny
 code = ""
@@ -17,6 +21,7 @@ arqMode = ""
 
 # zakodowana tablica ramek z informacjami
 tablesOfFrames = []
+
 
 
 def simulationMenu():
@@ -30,7 +35,7 @@ def simulationMenu():
         print("0. Wroć do poprzedniego menu")
         choice = int(input("Wybór: "))
         if choice == 1:
-            global model
+            global model, probability,modelType
             modelType = int(input("Wybierz model kanału:\n 1. BSC \n 2. Gilberta-Elliota"))
 
             # Musiałem zrobić tablice z numpy bo inaczej nie chcialo dzialac xd
@@ -43,17 +48,17 @@ def simulationMenu():
                 model = Chanel(probability,modelType)
         if choice == 2:
             print("Wybierz kod detekcyjny:")
-            print("1. CRC8")
-            print("2. CRC16")
-            print("3. Kontrola parzystości")
-            choice = int(input("Wybór: "))
+            print("a. CRC8")
+            print("b. CRC16")
+            print("c. Kontrola parzystości")
+            choice = input("Wybór: ")
             print("\n")
             global code
-            if choice == 1:
+            if choice == "a":
                 code = "01"
-            if choice == 2:
+            if choice == "b":
                 code = "10"
-            if choice == 3:
+            if choice == "c":
                 code = "11"
         if choice == 3:
             global arqMode
@@ -78,8 +83,12 @@ def simulationMenu():
 
             receiver = Receiver(tablesOfFrames,arqMode,model,code,originalSignal)
 
-            # tutaj ramki są odbierane i musze przekazac info o arq
+            # tutaj ramki są odbierane
             receiver.executeDecoder()
+
+            # zapis danych do pliku
+            fileManager = FileManager()
+            fileManager.saveSimulationData(receiver,frameLength,modelType,probability,code,arqMode)
 
 
         if choice == 0:
@@ -101,6 +110,7 @@ def menu():
             fileManager.generateToFile(filePath, dataLength)
         if choice == 2:
             filePath = input("Podaj ścieżkę do pliku: ")
+            global frameLength
             frameLength = input("Podaj długość pojedynczej ramki danych")
             fileManager = FileManager()
             global originalSignal

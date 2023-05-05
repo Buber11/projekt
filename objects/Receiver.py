@@ -18,6 +18,8 @@ class Receiver:
 
         self.senderError = []
         self.receiverError = []
+        self.falseAcceptance = 0
+
 
     def executeDecoder(self):
         # arqMode = 1 -> Stop and Wait
@@ -41,12 +43,21 @@ class Receiver:
                     newFrame = self.model.simulateChannel(newFrame)
                     receiverErrorCount += 1
                     if decoder.executeFrameDecoding(newFrame.frame):
+                        # Przypisanie prawidłowej ramki
+                        self.tableOfFrames[i] = newFrame
                         break
+            # Sprawdzenie czy potwierdzona ramka faktycznie powinna byc potwierdzona
+            # print("Oryginalna wiadomosc   : ",self.originalSignal[i])
+            # print("Zaakceptowana wiadomosc: ", self.tableOfFrames[i].data)
+            if not self.tableOfFrames[i].data == self.originalSignal[i]:
+                self.falseAcceptance += 1
+
             self.senderError.append(senderErrorCount)
             self.receiverError.append(receiverErrorCount)
             senderErrorCount = 0
             receiverErrorCount = 0
         # Pomocniczy print
+        print("Ilosc przeklaman: ",self.falseAcceptance)
         print(self.senderError)
         print(self.receiverError)
 
@@ -67,6 +78,8 @@ class Receiver:
             while i < len(indexes):
                 print("len indexes: {0}, indexes: {1}, i: {2}".format(len(indexes), indexes, i))
                 if decoder.executeFrameDecoding(self.tableOfFrames[indexes[i]].frame):
+                    if not self.tableOfFrames[indexes[i]].data == self.originalSignal[i]:
+                        self.falseAcceptance += 1
                     indexes.remove(indexes[i])
                     if len(indexes) == 0:
                         break
@@ -74,7 +87,6 @@ class Receiver:
                     if nextIndex < len(self.tableOfFrames):
                         indexes.append(nextIndex)
                     indexes.sort()
-
                 else:
                     self.senderError[indexes[i]] += 1
                     sender = Sender()
