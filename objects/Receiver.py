@@ -47,9 +47,9 @@ class Receiver:
                         self.tableOfFrames[i] = newFrame
                         break
             # Sprawdzenie czy potwierdzona ramka faktycznie powinna byc potwierdzona
-            # print("Oryginalna wiadomosc   : ",self.originalSignal[i])
-            # print("Zaakceptowana wiadomosc: ", self.tableOfFrames[i].data)
-            if not self.tableOfFrames[i].data == self.originalSignal[i]:
+            if self.tableOfFrames[i].data != self.originalSignal[i]:
+                #print("Oryginalna wiadomosc   : ", self.originalSignal[i])
+                #print("Zaakceptowana wiadomosc: ", self.tableOfFrames[i].data)
                 self.falseAcceptance += 1
 
             self.senderError.append(senderErrorCount)
@@ -78,7 +78,7 @@ class Receiver:
             while i < len(indexes):
                 print("len indexes: {0}, indexes: {1}, i: {2}".format(len(indexes), indexes, i))
                 if decoder.executeFrameDecoding(self.tableOfFrames[indexes[i]].frame):
-                    if not self.tableOfFrames[indexes[i]].data == self.originalSignal[i]:
+                    if not self.tableOfFrames[indexes[i]].data == self.originalSignal[indexes[i]]:
                         self.falseAcceptance += 1
                     indexes.remove(indexes[i])
                     if len(indexes) == 0:

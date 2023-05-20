@@ -78,8 +78,16 @@ def simulationMenu():
                 print("Brak wybranego trybu ARQ!")
                 break
 
+            #for i in range(len(tablesOfFrames)):
+            #    print(i," przed kanalem ",tablesOfFrames[i].data)
+            #print("dlugosc przed",len(tablesOfFrames[1].data))
+
             # tutaj ramki przechodzą przez kanał ale nie są odbierane jeszcze
             tablesOfFrames = model.simulateChannel(tablesOfFrames)
+
+            #for i in range(len(tablesOfFrames)):
+            #    print(i," poooo kanalem ",tablesOfFrames[i].data)
+            #print("dlugosc pooo", len(tablesOfFrames[1].data))
 
             receiver = Receiver(tablesOfFrames,arqMode,model,code,originalSignal)
 
@@ -89,7 +97,6 @@ def simulationMenu():
             # zapis danych do pliku
             fileManager = FileManager()
             fileManager.saveSimulationData(receiver,frameLength,modelType,probability,code,arqMode)
-
 
         if choice == 0:
             return False
