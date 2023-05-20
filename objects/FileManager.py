@@ -24,7 +24,7 @@ class FileManager:
         return tablesOfFrames
 
     def saveSimulationData(self,reciever,frameLength,model,probability,code,arqMode):
-        with open("simulation_data.txt","a") as file:
+        with open("testy18maj.txt","a") as file:
             file.write("\n")
             file.write(";model;")
             if model == 1:

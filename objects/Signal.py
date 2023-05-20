@@ -7,9 +7,9 @@ class Signal:
         self.frame = typeOfMessage+code+data+codeInformation
 
     def __str__(self):
-        return f"Signal(data={self.data}," \
-               f" typeOfMessage={self.typeOfMessage}," \
-               f" code={self.code}," \
+        return f" typeOfMessage={self.typeOfMessage}," \
+               f" code={self.code},"\
+               f" data={self.data}," \
                f" codeInformation={self.codeInformation})"
 
 
