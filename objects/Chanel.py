@@ -31,20 +31,26 @@ class Chanel:
             frame = tableOfFrames.frame
             bitsOfFrame = [int(bit) for bit in frame]
             signalLen = len(tableOfFrames.data)
+            counter = 0
             for i in range(len(frame)):
                 if self.goodBSCState:
-                    los = random.choices(elements,weights)
+                    los = random.choices(elements, weights=weights)
                     if los[0] == "yes":  # dochodzi do zamiany bitów oraz zmianu stanu w zły
+                        counter += 1
                         if bitsOfFrame[i] == 1:
                             bitsOfFrame[i] = 0
                         else:
                             bitsOfFrame[i] = 1
-                        self.goodBSCState = bool(False)
+                        if counter == 5:
+                            self.goodBSCState = bool(False)
+                            counter = 0
                     if los[0] == "no":  # nie dochodzi do zamiany bitów i pozostaje w dobrym stanie
+                        counter = 0
                         continue
                 else:
                     los = random.choices(elements, weights=badWeights)
                     if los[0] == "yes":  # dochodzi do zamiany bitów i pozostaje w złym stanie
+                        counter = 0
                         if bitsOfFrame[i] == 1:
                             bitsOfFrame[i] = 0
                         else:
@@ -52,7 +58,9 @@ class Chanel:
 
                         self.goodBSCState = bool(False)
                     if los[0] == "no":  # nie dochodzi do zamiany bitów i przechodzi w stan dobry
-                        self.goodBSCState = bool(True)
+                        counter += 1
+                        if counter == 5:
+                            self.goodBSCState = bool(True)
                         continue
 
             bit_string = ''.join(str(b) for b in bitsOfFrame)
