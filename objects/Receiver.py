@@ -22,8 +22,6 @@ class Receiver:
 
 
     def executeDecoder(self):
-        # arqMode = 1 -> Stop and Wait
-        # arqMode = 2 -> Selective Repeat
         if self.arqMode == 1:
             self.executeStopAndWait()
         if self.arqMode == 2:

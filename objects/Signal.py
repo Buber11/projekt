@@ -12,7 +12,8 @@ class Signal:
                f" data={self.data}," \
                f" codeInformation={self.codeInformation})"
 
-
+    def updateFrame(self):
+        self.frame = self.typeOfMessage + self.code + self.data + self.codeInformation
 
 
 

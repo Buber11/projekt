@@ -15,7 +15,7 @@ class Coder:
         bitsOfData = [int(bit) for bit in data]
         bitsOfCRC = [int(bit) for bit in CRC]
         for i in range(len(data)):
-            k = i;
+            k = i
             if bitsOfData[i] == 1 and i <= len(data) - len(CRC):
                 for j in range(len(CRC)):
                     bitsOfData[k] = self.XORoperation(bitsOfData[k], bitsOfCRC[j])
