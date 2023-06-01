@@ -27,11 +27,50 @@ class Chanel:
         # Wagi losowania do pozostania w złym stanie
         badWeights = [self.maintainErrorProbability, 1 - self.maintainErrorProbability]
 
+        if not isinstance(tableOfFrames,list) and not isinstance(tableOfFrames,Signal):
+            dataLen = len(tableOfFrames)
+            bitsOfFrame = [int(bit) for bit in tableOfFrames]
+            counter = 0
+            for i in range(dataLen):
+                if self.goodBSCState:
+                    los = random.choices(elements,weights)
+                    if los[0] == "yes":  # dochodzi do zamiany bitów oraz zmianu stanu w zły
+                        counter += 1
+                        if bitsOfFrame[i] == 1:
+                            bitsOfFrame[i] = 0
+                        else:
+                            bitsOfFrame[i] = 1
+                        if counter == 5:
+                            self.goodBSCState = bool(False)
+                            counter = 0
+                    if los[0] == "no":  # nie dochodzi do zamiany bitów i pozostaje w dobrym stanie
+                        counter = 0
+                        continue
+                else:
+                    los = random.choices(elements,badWeights)
+                    if los[0] == "yes":  # dochodzi do zamiany bitów i pozostaje w złym stanie
+                        counter = 0
+                        if bitsOfFrame[i] == 1:
+                            bitsOfFrame[i] = 0
+                        else:
+                            bitsOfFrame[i] = 1
+
+                        self.goodBSCState = bool(False)
+                    if los[0] == "no":  # nie dochodzi do zamiany bitów i przechodzi w stan dobry
+                        counter += 1
+                        if counter == 5:
+                            self.goodBSCState = bool(True)
+                        continue
+
+            newData = ''.join(str(b) for b in bitsOfFrame)
+            return newData
+
+
         if not isinstance(tableOfFrames,list):
             dataLen = len(tableOfFrames.data)
             bitsOfFrame = [int(bit) for bit in tableOfFrames.data]
             counter = 0
-            for i in range(len(dataLen)):
+            for i in range(dataLen):
                 if self.goodBSCState:
                     los = random.choices(elements,weights)
                     if los[0] == "yes":  # dochodzi do zamiany bitów oraz zmianu stanu w zły
@@ -67,12 +106,12 @@ class Chanel:
             tableOfFrames.updateFrame()
             return tableOfFrames
 
+        counter = 0
         for signal in tableOfFrames:
             bitsOfFrame = [int(bit) for bit in signal.data]
             signalLen = len(signal.data)
             # licznik do zliczania potrzebny do zmiany stanu
-            counter = 0
-            for i in range(len(signalLen)):
+            for i in range(signalLen):
                 if self.goodBSCState:
                     los = random.choices(elements,weights)
                     if los[0] == "yes":  # dochodzi do zamiany bitów oraz zmianu stanu w zły
@@ -114,6 +153,21 @@ class Chanel:
         elements = ["yes", "no"]  # elementy do losowania
         weights = [self.errorProbability, 1 - self.errorProbability]
         #print(weights)
+        if not isinstance(tableOfFrames,Signal) and not isinstance(tableOfFrames,list):
+            dataLen = len(tableOfFrames)
+            bitsOfFrame = [int(bit) for bit in tableOfFrames]
+            for i in range(dataLen):
+                los = random.choices(elements,weights)
+                if los[0] == "yes":  # dochodzi do zamiany bitów
+                    if bitsOfFrame[i] == 1:
+                        bitsOfFrame[i] = 0
+                    else:
+                        bitsOfFrame[i] = 1
+                if los[0] == "no":  # nie dochodzi do zamiany bitów
+                    continue
+            newData = ''.join(str(b) for b in bitsOfFrame)
+            return newData
+
         if not isinstance(tableOfFrames,list):
             dataLen = len(tableOfFrames.data)
             bitsOfFrame = [int(bit) for bit in tableOfFrames.data]

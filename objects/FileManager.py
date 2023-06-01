@@ -13,7 +13,7 @@ class FileManager:
                 number = random.randint(0, 1)
                 file.write(str(number))
 
-    def loadFromFile(self, filePath,frameLenth):
+    def loadFromFile(self, filePath, frameLenth):
         tablesOfFrames = []
         with open(filePath) as file:
             while True:
@@ -23,8 +23,8 @@ class FileManager:
                 tablesOfFrames.append(word)
         return tablesOfFrames
 
-    def saveSimulationData(self,reciever,frameLength,model,probability,code,arqMode):
-        with open("testy18maj.txt","a") as file:
+    def saveSimulationData(self, reciever, frameLength, model, probability, code, arqMode):
+        with open("testy18maj.txt", "a") as file:
             file.write("\n")
             file.write(";model;")
             if model == 1:
@@ -70,25 +70,8 @@ class FileManager:
             file.write(str(reciever.falseAcceptance))
             file.write(";\n")
 
-            numberOfErrors = 0
-            for x in range(len(reciever.senderError)):
-                if reciever.senderError[x] > 0:
-                    numberOfErrors += 1
-            file.write(";numberOfErrors;")
-            file.write(str(numberOfErrors))
-            file.write(";\n")
-
-            file.write(";senderError;")
-            for x in range(len(reciever.senderError)):
-                file.write(str(reciever.senderError[x]))
+            file.write(";errors;")
+            for x in range(len(reciever.errors)):
+                file.write(str(reciever.errors[x]))
                 file.write(";")
             file.write("\n")
-
-            if arqMode == 1:
-                file.write(";receiverError;")
-                for x in range(len(reciever.receiverError)):
-                    file.write(str(reciever.receiverError[x]))
-                    file.write(";")
-                file.write("\n")
-
-

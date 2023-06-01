@@ -1,3 +1,5 @@
+import math
+
 from objects.Decoder import Decoder
 from objects.Sender import Sender
 from objects.Signal import Signal
@@ -16,10 +18,8 @@ class Receiver:
 
         # Tablice przechowujące dane o błędach
 
-        self.senderError = []
-        self.receiverError = []
+        self.errors = []
         self.falseAcceptance = 0
-
 
     def executeDecoder(self):
         if self.arqMode == 1:
@@ -29,72 +29,149 @@ class Receiver:
 
     def executeStopAndWait(self):
         decoder = Decoder()
-        senderErrorCount = 0
-        receiverErrorCount = 0
+        errorCount = 0
         for i in range(len(self.tableOfFrames)):
             if not decoder.executeFrameDecoding(self.tableOfFrames[i].frame):
-                senderErrorCount += 1
                 sender = Sender()
                 while True:
                     newFrame = self.originalSignal[i]
                     newFrame = sender.prepareFrames(newFrame, self.code)
                     newFrame = self.model.simulateChannel(newFrame)
-                    receiverErrorCount += 1
+                    errorCount += 1
                     if decoder.executeFrameDecoding(newFrame.frame):
                         # Przypisanie prawidłowej ramki
                         self.tableOfFrames[i] = newFrame
                         break
             # Sprawdzenie czy potwierdzona ramka faktycznie powinna byc potwierdzona
             if self.tableOfFrames[i].data != self.originalSignal[i]:
-                #print("Oryginalna wiadomosc   : ", self.originalSignal[i])
-                #print("Zaakceptowana wiadomosc: ", self.tableOfFrames[i].data)
+                # print("Oryginalna wiadomosc   : ", self.originalSignal[i])
+                # print("Zaakceptowana wiadomosc: ", self.tableOfFrames[i].data)
                 self.falseAcceptance += 1
 
-            self.senderError.append(senderErrorCount)
-            self.receiverError.append(receiverErrorCount)
-            senderErrorCount = 0
-            receiverErrorCount = 0
+            self.errors.append(errorCount)
+            errorCount = 0
         # Pomocniczy print
-        print("Ilosc przeklaman: ",self.falseAcceptance)
-        print(self.senderError)
-        print(self.receiverError)
+        print("Ilosc przeklaman: ", self.falseAcceptance)
+        print(self.errors)
 
     def executeSelectiveRepeat(self):
         decoder = Decoder()
-        indexes = [0, 1, 2, 3]
 
-        for x in self.tableOfFrames:
-            print(x.frame)
+        # tabela indeksow w "sliding window"
+        indexes = []
+        indexesMaxSize = 4
+        # tabela dzięki, której będzie można zauważyć czy jakiś indeks nie został zaakceptowany kilka razy
+        indexesAcceptedByReciever = []
+        indexesAcceptedByRecieverCounter = 0
+        # tabela czasów
+        frameTime = []
+        maxTime = 20
+        # tabela stanów ramek,  -1 = niewysłania, 0  = wysłana ale nie potwierdzona (rośnie frameTime w każdej iteracji), 1 = wysłana i potwierdzona
+        frameStatus = []
+        # licznik ile ramek juz jest potwierdzonych
+        acceptedFrames = 0
 
-        senderErrorCount = 0
-
+        # inicjalizacja początkowych wartosci w tabelach
         for x in range(len(self.tableOfFrames)):
-            self.senderError.append(0)
+            self.errors.append(0)
+            indexesAcceptedByReciever.append(0)
+            frameTime.append(-1)
+            frameStatus.append(-1)
 
-        while len(indexes) != 0:
-            i = 0  # start at the beginning of the list
-            while i < len(indexes):
-                print("len indexes: {0}, indexes: {1}, i: {2}".format(len(indexes), indexes, i))
-                if decoder.executeFrameDecoding(self.tableOfFrames[indexes[i]].frame):
-                    if not self.tableOfFrames[indexes[i]].data == self.originalSignal[indexes[i]]:
-                        self.falseAcceptance += 1
-                    indexes.remove(indexes[i])
-                    if len(indexes) == 0:
+        #TODO
+        # Jak to powinno wyglądać
+        # tabela czasów deafultowo ma -1 na jakims indeksie ktory nie byl wyslany
+        # 0.9 trzeba moze jakos sprawdzic, ktora ramka czeka najdluzej, chociaz nie wiem czy jest sens bo jak
+        # wysylamy 3 i 1 przyjdzie ok to w tym samym momencie za x iteracji bedzie trzeba te 2 wyslac
+        # 1. Nadajnik sprawdza czy jakaś ramka nie czeka już na potwierdzenie za długo, jeśli tak to dodaje ją do indexes i zmienia czas na 0
+        # 1.1 Dodaje kolejne indexy do indexes jeżeli nie przekroczy to długości
+        # 2. Nadajnik wysyla ramki
+        # 3. przy odbieraniu zakłócamy indeksy po sprawdzeniu poprawności
+        # 4. jeżeli jest git, (jesli nie git to 5) to wysyłamy potwierdzenie o danym indeksie zakłóconym,
+        # które też może sie znowu zakłócić i dodajemy ten pojedynczo zaklocony do tabeli indexesAcceptedByReciever
+        # nadajnik otrzymuje potwierdzenia i jesli przyjdzie potwierdzenie nie wyslanej ramki to to ignoruje, jesli przyjdzie dobrej to usuwa z indexes
+        # aktualizacja wszystkich czasów wysłanych a nie potwierdzonych
+        # 5. wysyla indeks ramki ktora nie zostala zaakceptowana, ta wiadomosc moze byc tez zaklocona
+        # 6. odbiornik przyjmuje zaklocona wiadomosc ktora jest bledna to ja ignoruje, jesli przyjdzie dobra to index pozostaje w indexes
+        # aktualizacja wszystkich czasów wysłanych a nie potwierdzonych
+
+        while acceptedFrames != len(self.tableOfFrames):
+            # 1
+            for x in range(len(self.tableOfFrames)):
+                if frameTime[x] >= maxTime:
+                    indexes.append(x)
+                    frameTime[x] = 0
+                if len(indexes) == indexesMaxSize:
+                    break
+            # 1.1
+            if len(indexes) < 4:
+                for x in range(len(self.tableOfFrames)):
+                    if frameStatus[x] == -1:
+                        indexes.append(x)
+                        frameTime[x] = 0
+                        frameStatus[x] = 0
+                    if len(indexes) == indexesMaxSize:
                         break
-                    nextIndex = indexes[-1] + 1
-                    if nextIndex < len(self.tableOfFrames):
-                        indexes.append(nextIndex)
-                    indexes.sort()
-                else:
-                    self.senderError[indexes[i]] += 1
-                    sender = Sender()
-                    newFrame = self.originalSignal[indexes[i]]
-                    newFrame = sender.prepareFrames(newFrame, self.code)
-                    newFrame = self.model.simulateChannel(newFrame)
-                    self.tableOfFrames[indexes[i]] = newFrame
+            # tabele do przechowywania informacji o dobrych i złych ramkach
+            acceptedIndexes = []
+            rejectedIndexes = []
+            # 2
+            for x in range(len(indexes)):
+                if decoder.executeFrameDecoding(self.tableOfFrames[indexes[x]].frame):
+                    if not self.tableOfFrames[indexes[x]].data == self.originalSignal[indexes[x]]:
+                        self.falseAcceptance += 1
+                    binaryIndex = str(format(indexes[x],'09b'))
+                    # 3
+                    binaryIndexAfterChannel = self.model.simulateChannel(binaryIndex)
+                    # 4
+                    if int(binaryIndexAfterChannel,2) < len(self.tableOfFrames):
+                        indexesAcceptedByReciever[int(binaryIndexAfterChannel,2)] = 1
 
-                # update the index variable if we didn't remove an element
-                if i < len(indexes):
-                    i += 1
-                print(self.senderError)
-        print(self.senderError)
+                    acceptedIndexes.append(int(binaryIndexAfterChannel,2))
+                else:
+                    self.errors[indexes[x]] += 1
+                    sender = Sender()
+                    newFrame = self.originalSignal[indexes[x]]
+                    newFrame = sender.prepareFrames(newFrame,self.code)
+                    newFrame = self.model.simulateChannel(newFrame)
+                    self.tableOfFrames[indexes[x]] = newFrame
+                    # 5
+                    binaryIndex = str(format(indexes[x],'09b'))
+                    binaryIndexAfterChannel = self.model.simulateChannel(binaryIndex)
+                    rejectedIndexes.append(int(binaryIndexAfterChannel,2))
+            # zakłócenie tabeli potwierdzeń i odrzuceń w drodze do nadajnika z odbiornika jako wiadomości zwrotne
+            for x in range(len(acceptedIndexes)):
+                binaryIndex = str(format(acceptedIndexes[x], '09b'))
+                binaryIndexAfterChannel = self.model.simulateChannel(binaryIndex)
+                acceptedIndexes[x] = int(binaryIndexAfterChannel,2)
+            for x in range(len(rejectedIndexes)):
+                binaryIndex = str(format(rejectedIndexes[x], '09b'))
+                binaryIndexAfterChannel = self.model.simulateChannel(binaryIndex)
+                rejectedIndexes[x] = int(binaryIndexAfterChannel,2)
+            # 6 przyjęcie ramek
+
+            indexes = []
+
+            for x in range(len(acceptedIndexes)):
+                if acceptedIndexes[x] <= len(self.tableOfFrames):
+                    if frameStatus[acceptedIndexes[x]] == 0:
+                        frameStatus[acceptedIndexes[x]] = 1
+                        acceptedFrames += 1
+
+            for x in range(len(rejectedIndexes)):
+                if rejectedIndexes[x] <= len(self.tableOfFrames):
+                    if frameStatus[rejectedIndexes[x]] == 0:
+                        indexes.append(rejectedIndexes[x])
+                        frameTime[rejectedIndexes[x]] = 0
+            # aktualizacja czasów wysłanych a niepotwierdzonych ramek
+            for x in range(len(self.tableOfFrames)):
+                if frameStatus[x] == 0:
+                    frameTime[x] += 1
+
+        for x in range(len(indexesAcceptedByReciever)):
+            if indexesAcceptedByReciever[x] == 1:
+                indexesAcceptedByRecieverCounter += 1
+
+        print("Accepted frames: ",acceptedFrames)
+        print("indexes accepted counter: ",indexesAcceptedByRecieverCounter)
+        print(self.errors)
