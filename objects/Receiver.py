@@ -21,6 +21,9 @@ class Receiver:
         self.errors = []
         self.falseAcceptance = 0
 
+        # licznik do selective repeat
+        self.indexesAcceptedByRecieverCounter = 0
+
     def executeDecoder(self):
         if self.arqMode == 1:
             self.executeStopAndWait()
@@ -62,7 +65,6 @@ class Receiver:
         indexesMaxSize = 4
         # tabela dzięki, której będzie można zauważyć czy jakiś indeks nie został zaakceptowany kilka razy
         indexesAcceptedByReciever = []
-        indexesAcceptedByRecieverCounter = 0
         # tabela czasów
         frameTime = []
         maxTime = 20
@@ -78,7 +80,6 @@ class Receiver:
             frameTime.append(-1)
             frameStatus.append(-1)
 
-        #TODO
         # Jak to powinno wyglądać
         # tabela czasów deafultowo ma -1 na jakims indeksie ktory nie byl wyslany
         # 0.9 trzeba moze jakos sprawdzic, ktora ramka czeka najdluzej, chociaz nie wiem czy jest sens bo jak
@@ -118,8 +119,6 @@ class Receiver:
             # 2
             for x in range(len(indexes)):
                 if decoder.executeFrameDecoding(self.tableOfFrames[indexes[x]].frame):
-                    if not self.tableOfFrames[indexes[x]].data == self.originalSignal[indexes[x]]:
-                        self.falseAcceptance += 1
                     binaryIndex = str(format(indexes[x],'09b'))
                     # 3
                     binaryIndexAfterChannel = self.model.simulateChannel(binaryIndex)
@@ -153,13 +152,15 @@ class Receiver:
             indexes = []
 
             for x in range(len(acceptedIndexes)):
-                if acceptedIndexes[x] <= len(self.tableOfFrames):
+                if acceptedIndexes[x] < len(self.tableOfFrames):
                     if frameStatus[acceptedIndexes[x]] == 0:
+                        if self.tableOfFrames[acceptedIndexes[x]].data != self.originalSignal[acceptedIndexes[x]]:
+                            self.falseAcceptance += 1
                         frameStatus[acceptedIndexes[x]] = 1
                         acceptedFrames += 1
 
             for x in range(len(rejectedIndexes)):
-                if rejectedIndexes[x] <= len(self.tableOfFrames):
+                if rejectedIndexes[x] < len(self.tableOfFrames):
                     if frameStatus[rejectedIndexes[x]] == 0:
                         indexes.append(rejectedIndexes[x])
                         frameTime[rejectedIndexes[x]] = 0
@@ -170,8 +171,8 @@ class Receiver:
 
         for x in range(len(indexesAcceptedByReciever)):
             if indexesAcceptedByReciever[x] == 1:
-                indexesAcceptedByRecieverCounter += 1
+                self.indexesAcceptedByRecieverCounter += 1
 
         print("Accepted frames: ",acceptedFrames)
-        print("indexes accepted counter: ",indexesAcceptedByRecieverCounter)
+        print("indexes accepted counter: ",self.indexesAcceptedByRecieverCounter)
         print(self.errors)

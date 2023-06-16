@@ -29,10 +29,11 @@ def menu():
         print("Menu: ")
         print("1. Ręczna symulacja")
         print("2. Testy")
+        print("3. Testy średniej")
         print("0. Zakończ działanie programu")
         choice = int(input("Wybór: "))
         if choice == 1:
-            numberOfFrames = int(input("Podaj ilość : "))
+            numberOfFrames = int(input("Podaj ilość ramek: "))
             global originalSignal
             originalSignal = []
             global frameLength
@@ -46,11 +47,11 @@ def menu():
 
             # Musiałem zrobić tablice z numpy bo inaczej nie chcialo dzialac xd
             if modelType == 1:
-                probability[0] = input("podaj prawdopodobieństwo wysątpienia zmiany: ")
+                probability[0] = input("Podaj prawdopodobieństwo wysątpienia błędu: ")
                 model = Chanel(probability, modelType)
             if modelType == 2:
-                probability[0] = input("podaj prawdopodobieństwo pozostania w dobrym stanie: ")
-                probability[1] = input("podaj prawdopodobieństwo pozostania w złym stanie: ")
+                probability[0] = input("Podaj prawdopodobieństwo wysątpienia błędu w dobrym stanie: ")
+                probability[1] = input("Podaj prawdopodobieństwo wysątpienia błędu w złym stanie: ")
                 model = Chanel(probability, modelType)
             print("Wybierz kod detekcyjny:")
             print("a. CRC8")
@@ -99,9 +100,86 @@ def menu():
 
             # zapis danych do pliku
             fileManager = FileManager()
-            fileManager.saveSimulationData(receiver, frameLength, modelType, probability, code, arqMode)
 
+            fileManager.saveSimulationData(receiver, frameLength, model, probability, code, arqMode)
+        if choice == 2:
+            testFrameLength = [32, 64, 128]
+            testFrameNumber = [100, 200]
+            testCode = ["01", "10", "11"]
+            testArqMode = [1, 2]
+            testModelType = [1, 2]
+            testProb = [0.001, 0.01, 0.02]
+            testProb2 = [0.005, 0.05, 0.10]
+            for modelType in range(len(testModelType)):
+                for frameLength in range(len(testFrameLength)):
+                    for prob in range(len(testProb)):
+                        for arqMode in range(len(testArqMode)):
+                            for frameNumber in range(len(testFrameNumber)):
+                                for code in range(len(testCode)):
+                                    originalSignal = []
+                                    for x in range(testFrameNumber[frameNumber]):
+                                        originalSignal.append(''.join(
+                                            random.choice(['0', '1']) for _ in range(testFrameNumber[frameNumber])))
+                                    probability = np.array([0.0, 0.0])
+                                    if testModelType[modelType] == 1:
+                                        probability[0] = testProb[prob]
+                                        model = Chanel(probability, testModelType[modelType])
+                                    else:
+                                        probability[0] = testProb[prob]
+                                        probability[1] = testProb2[prob]
+                                        model = Chanel(probability, testModelType[modelType])
+                                    arqModeT = testArqMode[arqMode]
+                                    codeT = testCode[code]
+                                    sender = Sender()
+                                    tablesOfFrames = sender.prepareFrames(originalSignal, codeT)
+                                    tablesOfFrames = model.simulateChannel(tablesOfFrames)
+                                    receiver = Receiver(tablesOfFrames, arqModeT, model, codeT, originalSignal)
+                                    receiver.executeDecoder()
+                                    fileManager = FileManager()
+                                    fileManager.saveSimulationData(receiver, testFrameLength[frameLength], model,
+                                                                 probability, codeT, arqModeT)
+        if choice == 3:
+            testFrameLength = [32,64,128,256,512]
+            testFrameNumber = [100]
+            testCode = ["01", "10", "11"]
+            testArqMode = [1]
+            testModelType = [1]
+            testProb = [0.05,0.07]
+            testProb2 = [0.25,0.35]
+            for code in range(len(testCode)):
+                for frameLength in range(len(testFrameLength)):
+                    for prob in range(len(testProb)):
+                        for modelType in range(len(testModelType)):
+                            for frameNumber in range(len(testFrameNumber)):
+                                for arqMode in range(len(testArqMode)):
+                                    originalSignal = []
+                                    avg = 0
+                                    for numberOfTests in range(5):
+                                        for x in range(testFrameNumber[frameNumber]):
+                                            originalSignal.append(''.join(
+                                                random.choice(['0', '1']) for _ in range(testFrameNumber[frameNumber])))
+                                        probability = np.array([0.0, 0.0])
+                                        if testModelType[modelType] == 1:
+                                            probability[0] = testProb[prob]
+                                            model = Chanel(probability, testModelType[modelType])
+                                        else:
+                                            probability[0] = testProb[prob]
+                                            probability[1] = testProb2[prob]
+                                            model = Chanel(probability, testModelType[modelType])
+                                        arqModeT = testArqMode[arqMode]
+                                        codeT = testCode[code]
+                                        sender = Sender()
+                                        tablesOfFrames = sender.prepareFrames(originalSignal, codeT)
+                                        tablesOfFrames = model.simulateChannel(tablesOfFrames)
+                                        receiver = Receiver(tablesOfFrames, arqModeT, model, codeT, originalSignal)
+                                        receiver.executeDecoder()
+                                        avg += sum(receiver.errors)/len(receiver.errors)
+                                    avg /= 5
+                                    fileManager = FileManager()
+                                    fileManager.saveAvgData(testFrameNumber[frameNumber], testFrameLength[frameLength], model,
+                                                            probability, codeT, arqModeT,avg)
         if choice == 0:
             return False
+
 
 menu()

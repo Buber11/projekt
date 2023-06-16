@@ -10,6 +10,8 @@ class Chanel:
         self.maintainErrorProbability = float(probability[1])
         self.type = type
         self.goodBSCState = bool(True);
+        # zmienna dla G-E, dzieki niej mozna okreslic wspołczynnik pozostania w dobrym i złym stanie kanału
+        self.timeInGoodState = 0
 
     def simulateChannel(self, tableOfFrames):
         if self.type == 1:
@@ -111,9 +113,13 @@ class Chanel:
             bitsOfFrame = [int(bit) for bit in signal.data]
             signalLen = len(signal.data)
             # licznik do zliczania potrzebny do zmiany stanu
+            counter = 0
             for i in range(signalLen):
                 if self.goodBSCState:
+                    # print("Dobry stan")
+                    self.goodBSCState += 1
                     los = random.choices(elements,weights)
+                    # print("Los dobry: ",los)
                     if los[0] == "yes":  # dochodzi do zamiany bitów oraz zmianu stanu w zły
                         counter += 1
                         if bitsOfFrame[i] == 1:
@@ -125,9 +131,10 @@ class Chanel:
                             counter = 0
                     if los[0] == "no":  # nie dochodzi do zamiany bitów i pozostaje w dobrym stanie
                         counter = 0
-                        continue
                 else:
+                    # print("Zły stan")
                     los = random.choices(elements,badWeights)
+                    # print("Los zły: ", los)
                     if los[0] == "yes":  # dochodzi do zamiany bitów i pozostaje w złym stanie
                         counter = 0
                         if bitsOfFrame[i] == 1:
@@ -140,8 +147,7 @@ class Chanel:
                         counter += 1
                         if counter == 5:
                             self.goodBSCState = bool(True)
-                        continue
-
+                # print("Counter: ",counter)
             newData = ''.join(str(b) for b in bitsOfFrame)
             signal.data = newData
             signal.updateFrame()
